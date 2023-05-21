@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors')
+const { encode } = require('html-entities')
 
 const app = express()
 const port = 3000
@@ -40,7 +41,11 @@ app.post('/api/auth/register', (req, res) => {
     // Tạo user mới với id được tạo từ hàm makeId viết ở bên trên
     const newUser = {
         id: makeid(4),
-        username: body.username,
+        // Hàm encode của thư viện html-entities giúp mã hóa các ký tự như <, >,... thành html entities
+        // Từ đó giúp tránh được xss attach
+        // Tất cả các nội dung được hiển thị trên FE đều phải mã hóa thành entities
+        // Tham khảo: https://viblo.asia/p/ky-thuat-tan-cong-xss-va-cach-ngan-chan-YWOZr0Py5Q0
+        username: encode(body.username), 
         email: body.email,
         password: body.password, // Trong case thực tế thì chỗ này cần mã hóa password trước khi lưu vào DB.
     } 
@@ -84,7 +89,7 @@ app.post('/api/auth/login', (req, res) => {
 
 // API tạo messages
 app.post('/api/messages', (req, res) => {
-    const content = req.body.content
+    const content = encode(req.body.content)
     const userId = req.body.userId
 
     // Tìm xem user id dược gửi lên có xuất hiện trong mảng users hay không
